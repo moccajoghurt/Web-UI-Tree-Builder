@@ -4,7 +4,8 @@ import re
 
 
 def _slug(s):
-    return re.sub(r"[^a-z0-9:.-]+", "-", (s or "").lower()).strip("-")
+    s = re.sub(r"[^a-z0-9:.\-]+", "", s.lower())
+    return s
 
 
 def _load_lines(file_paths):
@@ -38,10 +39,6 @@ def _build_tree(actions):
     # leaf actions
     out = []
     for a in actions:
-        p = a.get("path") or []
-        parent = nid(p[:-1]) if len(p) > 0 else None
-        a["id"] = nid(p)
-        a["parent"] = parent
         out.append(a)
     result = {"groups": list(nodes.values()), "actions": out}
     return result

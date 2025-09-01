@@ -1,29 +1,9 @@
 import json
-import re
-
-
-def slug_id(parts):
-    s = ":".join(parts)
-    s = s.lower()
-    s = re.sub(r"[^a-z0-9:.\-]+", "-", s).strip("-")
-    return s
 
 
 def normalize_tree(tree):
     groups = {g["id"]: g for g in tree.get("groups", [])}
     actions = tree.get("actions", [])
-
-    for node in list(groups.values()):
-        pid = node.get("parent")
-        if pid and pid not in groups:
-            parts = node["id"].split(":")
-            title = parts[-2] if len(parts) >= 2 else node.get("title", "Group")
-            groups[pid] = {
-                "id": pid,
-                "title": title,
-                "parent": slug_id(parts[:-2]) if len(parts) > 2 else None,
-                "isGroup": True,
-            }
 
     edges = []
     nodes = {}
