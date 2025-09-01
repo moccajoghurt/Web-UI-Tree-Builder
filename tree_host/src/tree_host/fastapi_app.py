@@ -27,6 +27,10 @@ class ActionItem(BaseModel):
     type: str
 
 
+class DeleteItem(BaseModel):
+    id: str
+
+
 class ConnectionManager:
     """Manage active WebSocket connections and broadcast events."""
 
@@ -70,9 +74,14 @@ async def index():
 
 @app.post("/update-tree")
 async def update(data: ActionItem):
-    html_content = await tree.update_tree(data.model_dump())
+    await tree.update_tree(data.model_dump())
     await manager.broadcast("tree_updated")
-    return HTMLResponse(content=html_content, media_type="text/html")
+
+
+@app.post("/delete")
+async def delete_node(data: DeleteItem):
+    await tree.delete_node({"id": data.id})
+    await manager.broadcast("tree_updated")
 
 
 @app.websocket("/ws")

@@ -1,48 +1,5 @@
 import json
-import glob
 import re
-import sys
-
-
-def read_inputs(paths):
-    files = []
-    for p in paths:
-        files.extend(glob.glob(p))
-    if not files:
-        raise SystemExit("No input files matched. Use --input with JSON/JSONL paths.")
-
-    items = []
-    for fp in files:
-        with open(fp, "r", encoding="utf-8") as f:
-            txt = f.read().strip()
-            if not txt:
-                continue
-            if fp.endswith(".jsonl"):
-                for line in txt.splitlines():
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        items.append(json.loads(line))
-                    except json.JSONDecodeError as e:
-                        print(
-                            f"Warning: skipping bad JSONL line in {fp}: {e}",
-                            file=sys.stderr,
-                        )
-            elif fp.endswith(".json"):
-                try:
-                    obj = json.loads(txt)
-                except json.JSONDecodeError as e:
-                    raise SystemExit(f"Invalid JSON in {fp}: {e}") from e
-                items.append(obj)
-            else:
-
-                try:
-                    obj = json.loads(txt)
-                    items.append(obj)
-                except json.JSONDecodeError:
-                    print(f"Skipping non-JSON file: {fp}", file=sys.stderr)
-    return items
 
 
 def slug_id(parts):
@@ -173,6 +130,8 @@ def to_cytoscape_fragment(nodes, edges):
     ]
   }});
 
+  let selected = null;
+
   function updateInfo(n) {{
     const box = document.getElementById('info');
     if (!n) {{ box.textContent = 'Click a node to see details…'; box.className='muted'; return; }}
@@ -188,7 +147,8 @@ def to_cytoscape_fragment(nodes, edges):
     `;
   }}
 
-  cy.on('tap', 'node', (evt) => {{ updateInfo(evt.target); }});
+  cy.on('tap', 'node', (evt) => {{ selected = evt.target; updateInfo(evt.target); }});
+  cy.on('tap', (evt) => {{ if (evt.target === cy) {{ selected = null; updateInfo(null); }} }});
 
   document.getElementById('fit').onclick = () => cy.fit(null, 30);
 
@@ -222,6 +182,27 @@ def to_cytoscape_fragment(nodes, edges):
 
   // initial fit
   setTimeout(() => cy.fit(null, 30), 100);
+
+  // Delete selected node with Delete key
+  function isFormElement(el) {{
+    return el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+  }}
+  document.addEventListener('keydown', async (e) => {{
+    if (e.key !== 'Delete') return;
+    if (isFormElement(document.activeElement)) return;
+    if (!selected) return;
+    const id = selected.id();
+    try {{
+      await fetch('/delete', {{
+        method: 'POST',
+        headers: {{ 'Content-Type': 'application/json' }},
+  body: JSON.stringify({{ id }})
+      }});
+      // Page will auto-reload via WebSocket broadcast
+    }} catch (err) {{
+      console.error('Delete failed', err);
+    }}
+  }});
 </script>
 """
     return script
