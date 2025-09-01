@@ -1,4 +1,4 @@
-import { Store, ActionItem } from "./types";
+import { ActionItem } from "./types";
 import { addAction } from "./storage";
 import { visible, getLabel, makeId, route, splitPath } from "./utils";
 
@@ -25,7 +25,6 @@ export function highlight(el: Element, ms = 800) {
 }
 
 export function installPicker(
-  store: Store,
   pathInput: HTMLInputElement,
   typeSelect?: HTMLSelectElement
 ) {
@@ -79,7 +78,7 @@ export function installPicker(
       route: route(),
       type,
     };
-    addAction(store, obj);
+    addAction(obj);
     highlight(el);
   };
 

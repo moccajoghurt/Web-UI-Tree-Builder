@@ -4,27 +4,28 @@ const SKEY = "__action_picker_store__";
 
 export function loadStore(): Store {
   try {
-    const raw = localStorage.getItem(SKEY) || '{"actions":[]}';
-    const parsed = JSON.parse(raw) as Store;
-    if (!Array.isArray(parsed.actions)) parsed.actions = [];
-    return parsed;
+    const raw = localStorage.getItem(SKEY) || "{}";
+    const parsed = JSON.parse(raw) as Partial<Store>;
+    return { path: parsed.path || "" };
   } catch {
-    return { actions: [] };
+    return { path: "" };
   }
 }
 
 export function saveStore(store: Store) {
-  localStorage.setItem(SKEY, JSON.stringify(store));
+  localStorage.setItem(SKEY, JSON.stringify({ path: store.path || "" }));
 }
 
-export function addAction(store: Store, item: ActionItem) {
-  store.actions.push(item);
-  saveStore(store);
-}
-
-export function clearActions(store: Store) {
-  store.actions = [];
-  saveStore(store);
+export async function addAction(item: ActionItem) {
+  try {
+    await fetch("http://localhost/update-tree", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    });
+  } catch (err) {
+    console.error("Failed to POST action to /update-tree", err);
+  }
 }
 
 export function setPath(store: Store, value: string) {

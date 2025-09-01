@@ -1,13 +1,11 @@
 import { Store } from "./types";
-import { setPath, clearActions } from "./storage";
+import { setPath } from "./storage";
 
 export interface UIPanel {
   panel: HTMLDivElement;
   pathInput: HTMLInputElement;
   typeSelect: HTMLSelectElement;
   teardown: () => void;
-  onClear: (fn: () => void) => void;
-  onDownload: (fn: () => void) => void;
   onClose: (fn: () => void) => void;
 }
 
@@ -26,9 +24,7 @@ export function createPanel(store: Store): UIPanel {
           <option value="list-item-double-click">list-item-double-click</option>
           <option value="list-item-click">list-item-click</option>
         </select>
-      </label>
-      <button id="ap_clear">Clear</button>
-      <button id="ap_download">Download</button>
+  </label>
       <button id="ap_close">×</button>
     </div>
     <div style="margin-top:6px;opacity:.9">
@@ -66,12 +62,8 @@ export function createPanel(store: Store): UIPanel {
     if (el) el.onclick = fn;
   };
 
-  let clearCb: () => void = () => {};
-  let downloadCb: () => void = () => {};
   let closeCb: () => void = () => {};
 
-  on("#ap_clear", () => clearCb());
-  on("#ap_download", () => downloadCb());
   on("#ap_close", () => closeCb());
 
   return {
@@ -79,8 +71,6 @@ export function createPanel(store: Store): UIPanel {
     pathInput,
     typeSelect,
     teardown,
-    onClear: (fn) => (clearCb = fn),
-    onDownload: (fn) => (downloadCb = fn),
     onClose: (fn) => (closeCb = fn),
   };
 }

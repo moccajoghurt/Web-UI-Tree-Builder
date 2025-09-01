@@ -9,7 +9,6 @@ export interface ActionItem {
 
 export interface Store {
   path?: string;
-  actions: ActionItem[];
 }
 
 export interface ATPGlobal {
