@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Action Tree</title>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #app { display: grid; grid-template-columns: 1fr 320px; height: 100%; }
+    #cy { width: 100%; height: 100%; }
+    #side { border-left: 1px solid #ddd; padding: 12px; font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial; overflow: auto; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+    input[type="text"] { flex: 1 1 auto; padding: 6px 8px; }
+    button { padding: 6px 10px; }
+    .muted { color: #666; }
+    .badge { display:inline-block; padding:2px 6px; border:1px solid #ccc; border-radius: 10px; margin-right:6px; font-size:12px; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="cy"></div>
+  <div id="side">
+    <div class="row">
+      <input id="q" placeholder="Filter by title (regex ok)" />
+      <button id="fit">Fit</button>
+    </div>
+    <div class="row">
+      <label class="muted"><input type="checkbox" id="toggleGroups" checked/> Show groups</label>
+      <label class="muted"><input type="checkbox" id="toggleActions" checked/> Show actions</label>
+    </div>
+    <div id="info" class="muted">Click a node to see details…</div>
+  </div>
+</div>
+<script src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+<!-- TREE_HTML_PLACEHOLDER -->
+</body>
+</html>

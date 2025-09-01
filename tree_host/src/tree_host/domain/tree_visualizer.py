@@ -2,7 +2,6 @@ import json
 import glob
 import re
 import sys
-from collections import defaultdict
 
 
 def read_inputs(paths):
@@ -98,7 +97,14 @@ def normalize_tree(tree):
     return nodes, edges
 
 
-def to_cytoscape_html(nodes, edges, title="Action Tree"):
+def to_cytoscape_fragment(nodes, edges):
+    """Return only the JS needed to render the tree in an existing template.
+
+    The template must provide:
+      - A <div id="cy"></div> container
+      - Controls with ids: q, fit, toggleGroups, toggleActions, and an #info box
+      - The Cytoscape script included on the page
+    """
 
     cy_nodes = []
     for n in nodes.values():
@@ -112,44 +118,13 @@ def to_cytoscape_html(nodes, edges, title="Action Tree"):
             "path": " / ".join(n.get("path", [])) if n.get("path") else "",
         }
         cy_nodes.append({"data": data})
+
     cy_edges = [
         {"data": {"id": f"{u}->{v}", "source": u, "target": v}} for (u, v) in edges
     ]
 
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>{title}</title>
-<style>
-  html, body {{ height: 100%; margin: 0; }}
-  #app {{ display: grid; grid-template-columns: 1fr 320px; height: 100%; }}
-  #cy {{ width: 100%; height: 100%; }}
-  #side {{ border-left: 1px solid #ddd; padding: 12px; font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial; overflow: auto; }}
-  .row {{ display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }}
-  input[type="text"] {{ flex: 1 1 auto; padding: 6px 8px; }}
-  button {{ padding: 6px 10px; }}
-  .muted {{ color: #666; }}
-  .badge {{ display:inline-block; padding:2px 6px; border:1px solid #ccc; border-radius: 10px; margin-right:6px; font-size:12px; }}
-</style>
-</head>
-<body>
-<div id="app">
-  <div id="cy"></div>
-  <div id="side">
-    <div class="row">
-      <input id="q" placeholder="Filter by title (regex ok)" />
-      <button id="fit">Fit</button>
-    </div>
-    <div class="row">
-      <label class="muted"><input type="checkbox" id="toggleGroups" checked/> Show groups</label>
-      <label class="muted"><input type="checkbox" id="toggleActions" checked/> Show actions</label>
-    </div>
-    <div id="info" class="muted">Click a node to see details…</div>
-  </div>
-</div>
-<script src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+    # Only return the script that sets up the graph using the provided DOM
+    script = f"""
 <script>
   const elements = {{
     nodes: {json.dumps(cy_nodes, ensure_ascii=False)},
@@ -206,10 +181,10 @@ def to_cytoscape_html(nodes, edges, title="Action Tree"):
     box.className='';
     box.innerHTML = `
       <div><strong>${{esc(d.label)}}</strong></div>
-    <div class="muted">${{ [d.kind, d.type, d.role].filter(Boolean).map(x=>esc(x)).join(' • ') }}</div>
-    ${{ d.path ? `<div><span class="muted">Path:</span> ${{esc(d.path)}}</div>` : '' }}
-    ${{ d.route ? `<div><span class="muted">Route:</span> ${{esc(d.route)}}</div>` : '' }}
-      <div class="muted" style="margin-top:8px">ID: ${{esc(d.id)}}</div>
+    <div class=\"muted\">${{ [d.kind, d.type, d.role].filter(Boolean).map(x=>esc(x)).join(' • ') }}</div>
+    ${{ d.path ? `<div><span class=\"muted\">Path:</span> ${{esc(d.path)}}</div>` : '' }}
+    ${{ d.route ? `<div><span class=\"muted\">Route:</span> ${{esc(d.route)}}</div>` : '' }}
+      <div class=\"muted\" style=\"margin-top:8px\">ID: ${{esc(d.id)}}</div>
     `;
   }}
 
@@ -248,15 +223,12 @@ def to_cytoscape_html(nodes, edges, title="Action Tree"):
   // initial fit
   setTimeout(() => cy.fit(null, 30), 100);
 </script>
-</body>
-</html>
 """
-    return html
+    return script
 
 
 def visualize_tree(tree: dict) -> str:
-
+    """Return only the tree fragment (script) to be embedded into a template."""
     nodes, edges = normalize_tree(tree)
-    out = to_cytoscape_html(nodes, edges, title="Action Tree")
-
+    out = to_cytoscape_fragment(nodes, edges)
     return out

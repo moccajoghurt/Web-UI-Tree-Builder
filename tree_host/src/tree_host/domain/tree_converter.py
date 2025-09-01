@@ -48,7 +48,7 @@ def _build_tree(actions):
 
 
 def build_tree(files: str) -> dict:
-    input_paths = glob.glob(files)
+    input_paths = glob.glob(files, recursive=True)
     all_actions = list(_load_lines(input_paths))
     tree = _build_tree(all_actions)
     return tree
