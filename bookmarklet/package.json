@@ -1,0 +1,17 @@
+{
+  "name": "bookmarklet-project",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Modular bookmarklet project",
+  "scripts": {
+  "build": "node ./scripts/build.mjs",
+  "watch": "node ./scripts/build.mjs --watch",
+  "preview": "powershell -NoLogo -NoProfile -Command start dist/preview.html"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "esbuild": "^0.25.9",
+    "typescript": "^5.9.2"
+  }
+}
