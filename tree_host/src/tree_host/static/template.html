@@ -33,5 +33,18 @@
 </div>
 <script src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
 <!-- TREE_HTML_PLACEHOLDER -->
+<script>
+  // Lightweight WS client: reload the page when server broadcasts an update
+  (function(){
+    try {
+      var proto = (location.protocol === 'https:') ? 'wss' : 'ws';
+      var url = proto + '://' + location.host + '/ws';
+      var ws = new WebSocket(url);
+      ws.onmessage = function(){ location.reload(); };
+      ws.onerror = function(){ };
+      ws.onclose = function(){ setTimeout(function(){ location.reload(); }, 1500); };
+    } catch (e) { }
+  })();
+</script>
 </body>
 </html>
