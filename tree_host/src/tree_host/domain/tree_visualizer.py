@@ -1,29 +1,6 @@
 import json
 
 
-def normalize_tree(tree):
-    actions = tree.get("actions", [])
-
-    edges = []
-    nodes = {}
-
-    for a in actions:
-        nid = a["id"]
-        nodes[nid] = {
-            "id": nid,
-            "title": a.get("title", "(action)"),
-            "kind": "action",
-            "role": a.get("role"),
-            "route": a.get("route"),
-            "type": a.get("type"),
-            "path": a.get("path", []),
-        }
-        if a.get("parent"):
-            edges.append((a["parent"], nid))
-
-    return nodes, edges
-
-
 def to_cytoscape_fragment(nodes, edges):
     """Return only the JS needed to render the tree in an existing template.
 
@@ -164,6 +141,7 @@ def to_cytoscape_fragment(nodes, edges):
 
 def visualize_tree(tree: dict) -> str:
     """Return only the tree fragment (script) to be embedded into a template."""
-    nodes, edges = normalize_tree(tree)
+    nodes = tree.get("nodes", {})
+    edges = tree.get("edges", [])
     out = to_cytoscape_fragment(nodes, edges)
     return out
