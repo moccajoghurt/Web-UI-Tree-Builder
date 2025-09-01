@@ -1,0 +1,18 @@
+services:
+  tree-host:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/src
+    entrypoint:
+      - uvicorn
+      - tree_host.fastapi_app:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "80"
+    ports:
+      - "80:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
