@@ -15,16 +15,6 @@ def build_tree_html() -> str:
 
 
 def delete_tree_node(node_id: str) -> int:
-    """
-    Delete records from all JSONL files under ./data that match the given node id.
-
-    Behavior:
-    - Removes any record whose "id" equals node_id.
-    - Also removes descendants (ids starting with f"{node_id}:") so group deletions
-      clean the whole subtree.
-
-    Returns the total number of deleted records across all files.
-    """
     if not node_id:
         return 0
 

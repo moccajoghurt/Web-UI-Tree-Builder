@@ -2,20 +2,10 @@ import json
 
 
 def normalize_tree(tree):
-    groups = {g["id"]: g for g in tree.get("groups", [])}
     actions = tree.get("actions", [])
 
     edges = []
     nodes = {}
-
-    for g in groups.values():
-        nodes[g["id"]] = {
-            "id": g["id"],
-            "title": g.get("title", "Group"),
-            "kind": "group",
-        }
-        if g.get("parent"):
-            edges.append((g["parent"], g["id"]))
 
     for a in actions:
         nid = a["id"]
@@ -39,7 +29,7 @@ def to_cytoscape_fragment(nodes, edges):
 
     The template must provide:
       - A <div id="cy"></div> container
-      - Controls with ids: q, fit, toggleGroups, toggleActions, and an #info box
+      - Controls with ids: q, fit, toggleActions, and an #info box
       - The Cytoscape script included on the page
     """
 
@@ -52,7 +42,7 @@ def to_cytoscape_fragment(nodes, edges):
             "role": n.get("role"),
             "route": n.get("route"),
             "type": n.get("type"),
-            "path": " / ".join(n.get("path", [])) if n.get("path") else "",
+            "path": " > ".join(n.get("path", [])) if n.get("path") else "",
         }
         cy_nodes.append({"data": data})
 
@@ -73,19 +63,7 @@ def to_cytoscape_fragment(nodes, edges):
     elements: elements,
     layout: {{ name: 'breadthfirst', directed: true, spacingFactor: 1.1, padding: 20 }},
     style: [
-      {{
-        selector: 'node[kind = "group"]',
-        style: {{
-          'shape': 'round-rectangle',
-          'background-opacity': 0.1,
-          'border-width': 1,
-          'border-color': '#999',
-          'label': 'data(label)',
-          'text-wrap': 'wrap',
-          'text-max-width': 200,
-          'font-size': 12
-        }}
-      }},
+      
       {{
         selector: 'node[kind = "action"]',
         style: {{
@@ -134,17 +112,14 @@ def to_cytoscape_fragment(nodes, edges):
 
   // Filtering by title
   const q = document.getElementById('q');
-  const toggleGroups = document.getElementById('toggleGroups');
   const toggleActions = document.getElementById('toggleActions');
 
   function applyFilters() {{
     const re = q.value ? new RegExp(q.value, 'i') : null;
     cy.nodes().forEach(n => {{
-      const isGroup = n.data('kind') === 'group';
       const isAction = n.data('kind') === 'action';
       let vis = true;
       if (re && !re.test(n.data('label'))) vis = false;
-      if (isGroup && !toggleGroups.checked) vis = false;
       if (isAction && !toggleActions.checked) vis = false;
       n.style('display', vis ? 'element' : 'none');
     }});
@@ -157,7 +132,6 @@ def to_cytoscape_fragment(nodes, edges):
   }}
 
   q.addEventListener('input', applyFilters);
-  toggleGroups.addEventListener('change', applyFilters);
   toggleActions.addEventListener('change', applyFilters);
 
   // initial fit
